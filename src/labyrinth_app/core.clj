@@ -2,29 +2,35 @@
   (:require [org.httpkit.client :as http])
   (:require [clojure.data.json :as json]))
 
-(defn options [params]
+(defn options [query-params form-params]
   {:timeout 200
-   :query-params params
+   :form-params form-params
+   :query-params query-params
    :headers {"X-Labyrinth-Email" "dianagren@gmail.com"}})
 
 (defn url [path]
   (clojure.string/join ["http://challenge2.airtime.com:7182" path]))
 
-(defn request [path params]
-  (let [{:keys [body]} @(http/get (url path) (options params))]
+(defn get-request [path params]
+  (let [{:keys [body]} @(http/get (url path) (options params {}))]
     (json/read-str body :key-fn keyword)))
 
+(defn post-report [report]
+  (println "Posting report " report)
+  (let [{:keys [status body]} @(http/post (url "/report") (options {} report))]
+    (println "Status " status "BODY " body)))
+
 (defn exits [room-id]
-  (:exits (request "/exits" {"roomId" room-id})))
+  (:exits (get-request "/exits" {"roomId" room-id})))
 
 (defn wall [room-id]
-  (request "/wall" {"roomId" room-id}))
+  (get-request "/wall" {"roomId" room-id}))
 
 (defn move [room-id exit]
-  (:roomId (request "/move" {"roomId" room-id "exit" exit})))
+  (:roomId (get-request "/move" {"roomId" room-id "exit" exit})))
 
 (def start
-  (request "/start" {}))
+  (get-request "/start" {}))
 
 (defn walk-all-rooms [room-id]
   (loop [exits (exits room-id)
@@ -49,4 +55,4 @@
 (defn -main
   [& args]
   (let [all-rooms (walk-all-rooms (:roomId start))]
-    (println (create-report all-rooms))))
+    (println (post-report (create-report all-rooms)))))
