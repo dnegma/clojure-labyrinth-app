@@ -1,5 +1,6 @@
 (ns labyrinth-app.core
-    (:require [org.httpkit.client :as http]))
+    (:require [org.httpkit.client :as http])
+    (:require [clojure.data.json :as json]))
 
 (def options {:timeout 200
               :headers {"X-Labyrinth-Email" "dianagren@gmail.com"}})
@@ -13,7 +14,7 @@
       (let [{:keys [status header body error] :as resp} @(http/get (url airtime-host path) options)]
            (if error
              (println "Error " error)
-             (println "Success " status " results: " body))))
+             (println "Success " status " results: " body "room id: " ((json/read-str body) "roomId")))))
 (defn -main
       [& args]
       (request "/start"))
