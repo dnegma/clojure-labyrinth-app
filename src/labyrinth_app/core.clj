@@ -9,27 +9,27 @@
 (defn url [path]
   (clojure.string/join ["http://challenge2.airtime.com:7182" path]))
 
-(defn get-request [path params]
+(defn request [path params]
   (let [{:keys [body]} @(http/get (url path) (assoc options :query-params params))]
     (json/read-str body :key-fn keyword)))
 
-(defn post-report [report]
-  (println "Posting report " report)
-  (let [post-options {:body (json/write-str report) :headers {"Content-Type" "application/json" "X-Labyrinth-Email" "dianagren@gmail.com"}} {:keys [body]} @(http/post (url "/report") post-options)]
+(defn report [report]
+  (let [{:keys [body]} @(http/post (url "/report") (assoc options :body (json/write-str report)))]
     body))
 
 (defn exits [room-id]
-  (:exits (get-request "/exits" {"roomId" room-id})))
+  (:exits (request "/exits" {:roomId room-id})))
 
 (defn wall [room-id]
-  (get-request "/wall" {"roomId" room-id}))
+  (request "/wall" {:roomId room-id}))
 
 (defn move [room-id exit]
-  (:roomId (get-request "/move" {"roomId" room-id "exit" exit})))
+  (:roomId (request "/move" {:roomId room-id :exit exit})))
 
 (def start
-  (get-request "/start" {}))
+  (:roomId (request "/start" {})))
 
+;Program
 (defn walk-all-rooms [room-id]
   (loop [exits (exits room-id)
          walls []]
@@ -41,16 +41,17 @@
 (defn is-dark? [room]
   (and (= (:writing room) "xx") (= (:order room) -1)))
 
-(defn compare-rooms [room-a room-b]
+(defn compare-order [room-a room-b]
   (> (:order room-b) (:order room-a)))
 
 (defn create-report [rooms]
   (let [dark-rooms (filter is-dark? rooms)
         light-rooms (remove is-dark? rooms)]
     {:roomIds (map :roomId dark-rooms)
-     :challenge (clojure.string/join (map :writing (sort compare-rooms light-rooms)))}))
+     :challenge (clojure.string/join (map :writing (sort compare-order light-rooms)))}))
 
+;Main
 (defn -main
   [& args]
-  (let [all-rooms (walk-all-rooms (:roomId start))]
-    (println (post-report (create-report all-rooms)))))
+  (let [all-rooms (walk-all-rooms start)]
+    (println (report (create-report all-rooms)))))
