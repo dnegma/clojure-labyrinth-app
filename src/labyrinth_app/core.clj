@@ -37,11 +37,14 @@
 (defn is-dark? [room]
   (and (= (:writing room) "xx") (= (:order room) -1)))
 
+(defn compare-rooms [room-a room-b]
+  (> (:order room-b) (:order room-a)))
+
 (defn create-report [rooms]
   (let [dark-rooms (filter is-dark? rooms)
         light-rooms (remove is-dark? rooms)]
-    {:roomIds (map :roomId dark-rooms)
-     :challenge (map :writing light-rooms)}))
+    {:roomIds   (map :roomId dark-rooms)
+     :challenge (clojure.string/join (map :writing (sort compare-rooms light-rooms)))}))
 
 (defn -main
   [& args]
