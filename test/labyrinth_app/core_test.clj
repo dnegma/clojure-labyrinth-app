@@ -2,6 +2,5 @@
   (:require [clojure.test :refer :all]
             [labyrinth-app.core :refer :all]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+(deftest url-test
+         (is (= "www.google.com/test" (url "www.google.com" "/test"))))
