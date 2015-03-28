@@ -2,19 +2,26 @@
     (:require [org.httpkit.client :as http])
     (:require [clojure.data.json :as json]))
 
-(def options {:timeout 200
-              :headers {"X-Labyrinth-Email" "dianagren@gmail.com"}})
-(def airtime-host
+(def host
   "http://challenge2.airtime.com:7182")
+
+(defn options [params]
+           {:timeout 200
+            :query-params params
+            :headers {"X-Labyrinth-Email" "dianagren@gmail.com"}})
+
+(def default-options
+  (options ""))
 
 (defn url [host path]
       (clojure.string/join [host path]))
 
-(defn request [path]
-      (let [{:keys [status header body error] :as resp} @(http/get (url airtime-host path) options)]
-           (if error
-             (println "Error " error)
-             (println "Success " status " results: " body "room id: " ((json/read-str body) "roomId")))))
+(defn request [path params]
+      (let [{:keys [status header body error] :as resp} @(http/get (url host path) (options params))]
+           (println "path: " path " status: " status)
+           (json/read-str body)))
+
+
 (defn -main
       [& args]
-      (request "/start"))
+      (println "Results " (request "/exits" {"roomId" ((request "/start" "") "roomId")})))
