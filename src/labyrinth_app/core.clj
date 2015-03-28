@@ -19,10 +19,10 @@
 (defn request [path params]
       (let [{:keys [status header body error] :as resp} @(http/get (url host path) (options params))]
            (println "path: " path " status: " status)
-           (json/read-str body)))
+           (json/read-str body :key-fn keyword)))
 
 (defn exits [room-id]
-      (request "/exits" {"roomId" room-id}))
+      (:exits (request "/exits" {"roomId" room-id})))
 
 (defn wall [room-id]
       (request "/wall" {"roomId" room-id}))
@@ -33,7 +33,18 @@
 (def start
       (request "/start" {}))
 
+(defn find-black-rooms [room-id]
+  (loop [new-exits (exits room-id)
+        walls []]
+       (println "Exits; " new-exits)
+       (if (empty? new-exits)
+         walls
+         (recur (rest new-exits)
+                (conj walls (find-black-rooms (move room-id (first new-exits)))))))
+  )
+
 (defn -main
       [& args]
-      (println "Results " (start "roomId"))
-      (println "Move " (move (start "roomId") "south")))
+      (println "Results " (:roomId start))
+      (println "Move " (move (:roomId start) "south"))
+      (find-black-rooms (:rommId start)))
