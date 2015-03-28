@@ -27,18 +27,15 @@
 (def start
       (request "/start" {}))
 
-(defn find-black-rooms [room-id]
+(defn walk-all-rooms [room-id]
   (loop [new-exits (exits room-id)
         walls []]
-       ;(println "Exits; " new-exits "room-id" room-id)
        (if (empty? new-exits)
-         (conj walls (wall room-id))
+         (conj walls (assoc (wall room-id) :roomId room-id))
          (recur (rest new-exits)
-                (conj walls (find-black-rooms (move room-id (first new-exits)))))))
+                (concat walls (walk-all-rooms (move room-id (first new-exits)))))))
   )
 
 (defn -main
       [& args]
-      ;(println "Results " (:roomId start))
-      ;(println "Move " (move (:roomId start) "south"))
-      (println (find-black-rooms (:roomId start))))
+      (println (walk-all-rooms (:roomId start))))
