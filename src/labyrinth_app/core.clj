@@ -21,7 +21,19 @@
            (println "path: " path " status: " status)
            (json/read-str body)))
 
+(defn exits [room-id]
+      (request "/exits" {"roomId" room-id}))
+
+(defn wall [room-id]
+      (request "/wall" {"roomId" room-id}))
+
+(defn move [room-id exit]
+      (request "/move" {"roomId" room-id "exit" exit}))
+
+(def start
+      (request "/start" {}))
 
 (defn -main
       [& args]
-      (println "Results " (request "/exits" {"roomId" ((request "/start" "") "roomId")})))
+      (println "Results " (start "roomId"))
+      (println "Move " (move (start "roomId") "south")))
