@@ -28,13 +28,12 @@
       (request "/start" {}))
 
 (defn walk-all-rooms [room-id]
-  (loop [new-exits (exits room-id)
+  (loop [exits (exits room-id)
         walls []]
-       (if (empty? new-exits)
+       (if (empty? exits)
          (conj walls (assoc (wall room-id) :roomId room-id))
-         (recur (rest new-exits)
-                (concat walls (walk-all-rooms (move room-id (first new-exits)))))))
-  )
+         (recur (rest exits)
+                (concat walls (walk-all-rooms (move room-id (first exits))))))))
 
 (defn -main
       [& args]
